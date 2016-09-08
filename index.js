@@ -1,8 +1,8 @@
 var through = require('through2');
 var crypto = require('crypto');
 
-function format (_path, hash) {
-    return _path + ' ' + hash.digest('hex');
+function defaultFormat (_path, _hex) {
+    return _path + ' ' + _hex;
 }
 
 function hashStream (_path, hash) {
@@ -25,6 +25,7 @@ module.exports = function (options) {
     options = options || {};
 
     if (!options.algo) options.algo = 'md5';
+    var format = options.format || defaultFormat;
 
     var stream = through.obj(function (file, inc, callback) {
         var _path = '';
@@ -40,7 +41,7 @@ module.exports = function (options) {
 
         if (file.isBuffer()) {
 			hash.update(file.contents);
-			file.contents = new Buffer(format(_path, hash));
+			file.contents = new Buffer(format(_path, hash.digest('hex')));
 
             this.push(file);
             return callback();
