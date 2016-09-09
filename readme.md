@@ -38,6 +38,35 @@ mapping of filepaths to their hash separted by newline
 /public/js/file1.js ################################
 ```
 
+
+##Options##
+
+The `hash` command supports the following options
+
+- `options.algo` - which hashing algorithm to use. Examples are `'md5'` (the default) and `'sha1'`. The algorithms available will depend on the version of OpenSSL on your system - see [the node documentation](https://nodejs.org/api/crypto.html#crypto_crypto_createhash_algorithm).
+
+- `options.format` - by default, the manifest will formatted as per the example above, with the file followed by the hash. `options.format` is a function which takes the file name and hash as parameters, and returns a string
+
+```
+var gulp = require("gulp"); 
+var hash = require("gulp-hash-manifest");
+var concat = require("gulp-concat");
+
+gulp.task("make-md5-manifest", function() {
+	var path = "build/";
+	var absPath = __dirname + path;
+	var prefixLen = absPath.length + 2;
+	return gulp.src(path + "**/**", {base: path})
+        .pipe(hash({
+			format: function(_path, _hex) {
+				return _hex + " " + _path.substr(prefixLen);
+			}
+		}))
+        .pipe(concat("checksum.md5"))
+        .pipe(gulp.dest(path ));
+});
+```
+
 # License
 
 The MIT License (MIT)
