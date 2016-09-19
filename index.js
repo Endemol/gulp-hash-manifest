@@ -5,7 +5,7 @@ function defaultFormat (_path, _hex) {
     return _path + ' ' + _hex;
 }
 
-function hashStream (_path, hash) {
+function hashStream (_path, hash, format) {
     var stream = through.obj(
         function transform (chunk, enc, callback) {
             hash.update(chunk);
@@ -13,7 +13,7 @@ function hashStream (_path, hash) {
         },
 
         function flush (callback) {
-            this.push(format(_path, hash));
+            this.push(format(_path, hash.digest('hex')));
             callback();
         }
     );
@@ -26,7 +26,7 @@ module.exports = function (options) {
 
     if (!options.algo) options.algo = 'md5';
     var format = options.format || defaultFormat;
-
+    
     var stream = through.obj(function (file, inc, callback) {
         var _path = '';
 
@@ -48,7 +48,7 @@ module.exports = function (options) {
         }
 
         if (file.isStream()) {
-            var streamer = hashStream(_path, hash);
+            var streamer = hashStream(_path, hash, format);
             streamer.on('error', this.emit.bind(this, 'error'));
             file.contents = file.contents.pipe(streamer);
 
